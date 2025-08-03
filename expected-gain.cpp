@@ -1,6 +1,5 @@
-#include <iostream>
-#include <vector>
-
+#include "./functions.h"
+#include <iomanip>  
 using namespace std; 
 
 using ll = long long;
@@ -8,16 +7,8 @@ using ll = long long;
 template <typename T>
 using matrix = vector<vector<T>>;
 
-int const G = 0;
-int const O = 1;
-
-enum Strategy {
-    GREEDY,
-    OPTIMAl
-};
-
-bool const L = false;
-bool const R = true;
+matrix<bool> greedy;
+matrix<bool> opt;
 
 vector<ll> rand_coins(ll n, ll A, ll B) {
     vector<ll> coins(n);
@@ -28,106 +19,33 @@ vector<ll> rand_coins(ll n, ll A, ll B) {
 }
 
 
-matrix<bool> greedy_play(vector<ll> coins, bool dbg)
-{
-    int n = coins.size();
-    matrix<bool> greedy(n, vector<bool>(n + 1, false));
-    for (int i = 0; i < n; ++i)
-    {
-        for (int j = i + 1; j <= n; j++)
-        {
-            greedy[i][j] = coins[i] <= coins[j - 1];
-        }
-    }
-    if(dbg) {
-    for(auto v : greedy) {
-        for(auto t : v) {
-            cout << t << ' ';
-        }
-        cout << endl;
-    }
-    }
-    return greedy;
-}
-
-matrix<bool> optimal_play(vector<ll> coins, bool dbg)
-{
+ll gain_under_optimal(vector<ll> coins) {
     ll n = coins.size();
-    matrix<ll> dp(n, vector<ll>(n, 0));
-    matrix<bool> opt(n, vector<bool>(n + 1, false));
-    auto gp = greedy_play(coins, false);
-    for (ll i = 0; i < n; ++i)
-    {
-        dp[i][i] = coins[i];
-        opt[i][i + 1] = 1;
-    }
-
-    for (ll i = n - 1; i >= 0; --i)
-    {
-        for (ll j = i + 1; j < n; ++j)
-        {
-
-            ll gain_left = coins[i] - dp[i + 1][j];
-            ll gain_right = coins[j] - dp[i][j - 1];
-
-            if (gain_left < gain_right)
-            {
-                dp[i][j] = gain_right;
-                opt[i][j + 1] = R;
-            }
-            else if(gain_left == gain_right) {
-                dp[i][j] = gain_left;
-                opt[i][j + 1] = gp[i][j+1];
-            }
-            else
-            {
-                dp[i][j] = gain_left;
-                opt[i][j + 1] = L;
-            }
+    vector<vector<ll>> dp(n, vector<ll> (n, 0));
+    for(ll i = 0; i <n; ++i) dp[i][i] = coins[i];
+    ll sum = 0;
+    for(ll i = 0; i <n; ++i) sum += coins[i];
+    for(ll i = n - 1; i >=0; --i) {
+        for(ll j = i + 1; j < n; ++j) {
+            dp[i][j] = max(coins[i] - dp[i+1][j],
+                 coins[j] - dp[i][j-1]);
         }
     }
-    if(dbg) {
-    for(auto v : opt) {
-        for(auto t : v) {
-            cout << t <<  " ";
-        }
-        cout << endl;
-    }
-    cout << '\n';
-    }
-    return opt;
+    return dp[0][n-1];
 }
+
 
 // coins.size() has to be pair
-double expected_gain(vector<ll> coins, double p, double q, bool dbg) {
-    int n = coins.size();
+double expected_gain(vector<ll> coins, int left, int right, double p, double q) {
+    int n = right - left + 1;
     vector<matrix<double>> A(n,
          matrix<double> (n+1, vector<double> (2, 0.0)));
-
-    matrix<bool> greedy = greedy_play(coins, false);
-    cout << endl;
-    matrix<bool> opt = optimal_play(coins, false);
 
     for(int i = 0; i < n; ++i) {
         A[i][i][G] = 0.0;
         A[i][i][O] = 0.0;
-        A[i][i+1][G] = -coins[i];
-        A[i][i+1][O] = -coins[i];
-    }
-    if(dbg) {
-        for(auto v : greedy) {
-            for(auto t : v) {
-                cout << t <<  " ";
-            }
-            cout << endl;
-        }
-        cout << "\n\n\n";
-        for(auto v : opt) {
-            for(auto t : v) {
-                cout << t <<  " ";
-            }
-            cout << endl;
-        }
+        A[i][i+1][G] = -coins[i + left];
+        A[i][i+1][O] = -coins[i + left];
     }
     int ct = 0;
     int cts = 0;
@@ -156,25 +74,12 @@ double expected_gain(vector<ll> coins, double p, double q, bool dbg) {
                     change_state_gain = -coins[i] + A[i+1][j][O];
                 }
 
-                if(dbg) {
+                if(false) {
                     cout << p << "*" << "Gain from stay in greedy - " << same_state_gain << endl;
                     cout << (1-q) <<"*" << "Gain from tr from opt - " << change_state_gain << endl;
                 }
 
-                A[i][j][G] = p * same_state_gain + (1-p) * change_state_gain;
-
-                if(dbg) {
-                    if(greedy[i][j] == opt[i][j]) {
-                        cout << "Same strategy " << cts << endl;
-                        ++cts;
-                    }
-                    if(same_state_gain == change_state_gain) {
-                        cout << "same value " << ct << endl;
-                        ++ct;
-                    } else {
-                        cout <<"DIFFERENT VALUE"<<endl;
-                    }    
-                }
+                A[i][j][O] = p * same_state_gain + (1-p) * change_state_gain;
 
                 if(opt[i][j] == R) {
                     double temp = A[i][j-1][O];
@@ -192,37 +97,64 @@ double expected_gain(vector<ll> coins, double p, double q, bool dbg) {
                     change_state_gain = -coins[i] + A[i+1][j][G];
                 } 
                 
-                if(dbg) {
+                if(false) {
                     if(greedy[i][j] == opt[i][j]) {
                         cout << "Same strategy " << cts << endl;
                         ++cts;
                     }
                     if(same_state_gain == change_state_gain) {
-                        cout << "same value " << ct << endl;
+                        cout << "SSame value " << ct << endl;
                         ++ct;
                     } else {
                         cout <<"DIFFERENT VALUE"<<endl;
                     }
                 }
 
-                A[i][j][O] = q * same_state_gain + (1-q) * change_state_gain;
+                A[i][j][G] = q * same_state_gain + (1-q) * change_state_gain;
 
             }
         }
     }
-    cout << "Finish at G: " << A[0][n][G] << endl;
-    cout << "Finish at O: " << A[0][n][O] << endl;
+    if(false) {
+        cout << "Finish at G: " << A[0][n][G] << endl;
+        cout << "Finish at O: " << A[0][n][O] << endl;
+    }
     return max(A[0][n][G], A[0][n][O]);
 }
 
 
 int main(void) {
-
-    vector<ll> coins = {4, 6, 4, 0, 3};
+    int n = 6;
+    vector<ll> coins = {1, 10, 6, 4, 8, 2};
     double p, q;
-    // double p = 0.0, q = 0.0;
-    cin >> p >> q;
-    cout << expected_gain(coins, p, q, false) << endl;
+    matrix<double> exp_g(11, vector<double> (11));
+    /*
+   
+    for(int i = 0; i <= 10; ++i) {
+         for(int j = 0; j <= 10; ++j) {
+            exp_g[i][j] = expected_gain(coins, 0, n - 1, i * 0.1, j*0.1);
+        }
+    }
+    */
+    greedy = greedy_play(coins, 0, n - 1);
+    opt = optimal_play(coins, 0, n - 1);
+    cout.precision(6);
+    cout << fixed;
+    cout << "\t ";
+    for(int j = 0;j <= 10; ++j){
+        cout << j * 0.1 << " ";
+    }
+    cout << endl;
+    for(int i = 0; i <= 10; ++i) {
+        cout << i * 0.1 << " ";
+         for(int j = 0;j <= 10; ++j) {
+            cout << expected_gain(coins, 0, n - 1, i*0.1, j*0.1) << ' ';
+        }
+        cout << endl;
+    }
     
+    cin >> p >> q;
+    cout << expected_gain(coins, 0, n - 1, p, q) << endl;
+    cout << "Gain under optimal: " << gain_under_optimal(coins) << endl;
     return 0;
 }

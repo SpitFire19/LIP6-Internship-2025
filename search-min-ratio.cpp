@@ -152,20 +152,24 @@ double greedy_opt_ratio(vector<ll> coins)
     }
     return (count * 1.0) / total;
 }
+
 // 1581 3691 591 6357 8825 4401 5250 4048 7177 5610 556 4009 8745 5773 698 2811
-// (1581 - 3691 + 591) (6357 - 8825 + 4401) 5250 (4048 - 7177 + 5610) 556 (4009 - 8745 + 5773) 698 2811
 
 int main()
 {
     srand(time(NULL));
     int n = 16;
     double total_mean = 0.0;
-    double min_mean = 2;
-    vector<ll> lst = {0, 1, 10000000};
+
+    vector<ll> lst = {0, 1};
+
+    vector<ll> coins_initial = rand_coins(n, A, B);
+    double min_mean = greedy_opt_ratio(coins_initial);
+
     vector<ll> min_coins(n), max_coins(n);
     for (;;)
     {
-        vector<ll> coins = rand_coins(n, A, B);
+        vector<ll> coins = rand_coins_from_list(n, A, B, lst);
         double ratio = greedy_opt_ratio(coins);
         if (ratio < min_mean)
         {
