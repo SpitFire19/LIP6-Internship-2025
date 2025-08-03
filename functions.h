@@ -1,8 +1,7 @@
 /*
-This is the file that contains basic includes, definitions,
+The file that contains basic includes, definitions,
 utilities, functions, including those used to then calculate
 moves under certain strategies
-
 */
 
 #pragma once
@@ -22,10 +21,6 @@ using std::string;
 using std::set;
 using std::max;
 using std::min;
-
-using std::uniform_int_distribution;
-using std::uniform_real_distribution;
-using std::default_random_engine;
 
 using ll = long long;
 using ld = long double;
@@ -340,4 +335,23 @@ ll gain_under_optimal(vector<ll> coins) {
         }
     }
     return dp[0][n-1];
+}
+
+double greedy_opt_ratio(vector<ll> coins)
+{
+    int n = coins.size();
+    matrix<bool> greedy = greedy_play(coins, 0, n - 1);
+    matrix<bool> optimal = optimal_play(coins, 0, n - 1);
+    ll total = n * (n + 2)  / 4;
+    ll count = 0;
+
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = i + 1; j < n + 1; ++j)
+        {
+            if ((j - i) % 2 == 1 && greedy[i][j] == optimal[i][j])
+                count++;
+        }
+    }
+    return (count * 1.0) / total;
 }

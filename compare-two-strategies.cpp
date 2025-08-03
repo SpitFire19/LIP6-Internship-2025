@@ -1,24 +1,5 @@
 #include "./functions.h"
 
-double greedy_opt_ratio(vector<ll> coins)
-{
-    int n = coins.size();
-    matrix<bool> greedy = greedy_play(coins, 0, n - 1);
-    matrix<bool> optimal = optimal_play(coins, 0, n - 1);
-    ll total = n * (n + 2)  / 4;
-    ll count = 0;
-
-    for (int i = 0; i < n; ++i)
-    {
-        for (int j = i + 1; j < n + 1; ++j)
-        {
-            if ((j - i) % 2 == 1 && greedy[i][j] == optimal[i][j])
-                count++;
-        }
-    }
-    return (count * 1.0) / total;
-}
-
 int main()
 {
     srand(time(NULL));
@@ -29,7 +10,7 @@ int main()
     double min_mean = 2;
     vector<ll> lst = {0, 1, 10000000};
     vector<ll> min_coins(n), max_coins(n);
-    
+
     for (int it = 0; it < iter; ++it)
     {
         vector<ll> coins = rand_coins(n, A, B);
