@@ -48,11 +48,11 @@ vector<ll> rand_coins(ll n, int A, int B)
     vector<ll> coins(n);
     for (ll &t : coins)
     {
-        t = rand() % (B - A + 1); 
+        t = A + rand() % (B - A + 1); 
     }
     return coins;
 }
-
+// Generate n random coins with values from a list
 vector<ll> rand_coins_from_list(ll n, vector<ll> vals)
 {
     vector<ll> coins(n);
@@ -66,6 +66,12 @@ vector<ll> rand_coins_from_list(ll n, vector<ll> vals)
     return coins;
 }
 
+
+/// @brief Give the matrix with greedy moves on the close intervals 
+/// @param coins a row of coins
+/// @param l left  side of subarray
+/// @param r right side of subarray
+/// @return Matrix with values in {L, R} = {left, right}
 matrix<bool> greedy_play(vector<ll> &coins, int l, int r)
 {
     int n = r - l + 1;
@@ -80,6 +86,11 @@ matrix<bool> greedy_play(vector<ll> &coins, int l, int r)
     return greedy;
 }
 
+/// @brief Give the matrix with optimal moves on the close intervals 
+/// @param coins a row of coins
+/// @param l left  side of subarray
+/// @param r right side of subarray
+/// @return Matrix with values in {L, R} = {left, right}
 matrix<bool> optimal_play(vector<ll> &coins, int l, int r)
 {
     ll n = r - l + 1;
@@ -118,7 +129,12 @@ matrix<bool> optimal_play(vector<ll> &coins, int l, int r)
     return opt;
 }
 
-matrix<bool> optimal_vs_greedy_play(vector<ll> coins) {
+/// @brief Give the matrix with mixed-strategy moves on the close intervals 
+/// @param coins a row of coins
+/// @param l left  side of subarray
+/// @param r right side of subarray
+/// @return Matrix with values in {L, R} = {left, right}
+matrix<bool> optimal_vs_greedy_play(vector<ll>& coins) {
     ll n = coins.size();
     vector<vector<ll>> dp(n, vector<ll> (n, 0));
     matrix<bool> opt_greedy(n, vector<bool> (n + 1, false));
@@ -162,7 +178,12 @@ matrix<bool> optimal_vs_greedy_play(vector<ll> coins) {
     return opt_greedy;
 }
 
-matrix<bool> optimal_vs_subopt_play(vector<ll> coins) {
+/// @brief Give the matrix with mixed-strategy moves on the close intervals 
+/// @param coins a row of coins
+/// @param l left  side of subarray
+/// @param r right side of subarray
+/// @return Matrix with values in {L, R} = {left, right}
+matrix<bool> optimal_vs_subopt_play(vector<ll>& coins) {
     ll n = coins.size();
     vector<vector<ll>> dp(n, vector<ll> (n, 0));
     matrix<bool> opt_subopt(n, vector<bool> (n + 1, false));
@@ -216,7 +237,10 @@ matrix<bool> optimal_vs_subopt_play(vector<ll> coins) {
     return opt_subopt;
 }
 
-ll gain_under_optimal_vs_greedy(vector<ll> coins) {
+/// @brief The value of the game under mixed optimal-greedy strategy
+/// @param coins 
+/// @return Player1 gain - Player2 gain
+ll gain_under_optimal_vs_greedy(vector<ll>& coins) {
     ll n = coins.size();
     vector<vector<ll>> dp(n, vector<ll> (n, 0));
 
@@ -242,7 +266,10 @@ ll gain_under_optimal_vs_greedy(vector<ll> coins) {
     return dp[0][n-1];
 }
 
-ll gain_under_opt_vs_subopt(vector<ll> coins) {
+/// @brief The value of the game under mixed optimal-suboptimal strategy
+/// @param coins 
+/// @return Player1 gain - Player2 gain
+ll gain_under_opt_vs_subopt(vector<ll>& coins) {
     ll n = coins.size();
     vector<vector<ll>> dp(n, vector<ll> (n, 0));
 
@@ -265,7 +292,10 @@ ll gain_under_opt_vs_subopt(vector<ll> coins) {
     return dp[0][n-1];
 }
 
-ll gain_under_optimal_vs_greedy_ans(vector<ll> coins) {
+/// @brief Give the moves to follow under mixed optimal-suboptimal strategy
+/// @param coins a row of coins
+/// @return Player1 gain - Player2 gain
+ll gain_under_optimal_vs_greedy_ans(vector<ll>& coins) {
     ll n = coins.size();
     vector<vector<ll>> dp(n, vector<ll> (n, 0));
     vector<vector<ll>> prev(n, vector<ll>(n, 0));
@@ -324,7 +354,10 @@ ll gain_under_optimal_vs_greedy_ans(vector<ll> coins) {
     return dp[0][n-1];
 }
 
-ll gain_under_optimal(vector<ll> coins) {
+/// @brief Give the value of a game with opt-opt strategy
+/// @param coins a row of coins
+/// @return Player1 gain - Player2 gain
+ll gain_under_optimal(vector<ll>& coins) {
     ll n = coins.size();
     vector<vector<ll>> dp(n, vector<ll> (n, 0));
     for(ll i = 0; i <n; ++i) dp[i][i] = coins[i];
@@ -337,7 +370,10 @@ ll gain_under_optimal(vector<ll> coins) {
     return dp[0][n-1];
 }
 
-double greedy_opt_ratio(vector<ll> coins)
+/// @brief Give the ratio of intervals where greedy move = optimal move
+/// @param coins a row of coins
+/// @return 0 <= R <= 1
+double greedy_opt_ratio(vector<ll>& coins)
 {
     int n = coins.size();
     matrix<bool> greedy = greedy_play(coins, 0, n - 1);
